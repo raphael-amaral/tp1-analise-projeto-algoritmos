@@ -11,9 +11,8 @@ Instruções:
 from typing import Any, List, Tuple
 import unittest
 
-import math
 
-def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[Any], int, int]:
+def my_authorial_sort(arr: List[Any]) -> Tuple[List[Any], int, int]:
     """
     IMPLEMENTE AQUI SEU ALGORITMO AUTORAL.
 
@@ -31,81 +30,26 @@ def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[An
     comps = 0
     moves = 0
 
+    # =========================================================================
     # TODO: Escreva sua lógica autoral aqui.
-
-    frequencias: dict[int | float, int] = {}
-    """
-    frequencias = {
-        numero: vezes que o numero aparece
-        2: 5
-        3: 7
-        7.7: 1
-    }
-    """
-
-    blocos: dict[int, dict] = {}
-    """
-    blocos = {
-        id_bloco: bloco
-        # [0, 100)
-        0: {
-            vetor = [
-                [(2, 5)],
-                [(3, 7)],
-                vazio,
-                vazio,
-                vazio,
-                [(7.7, 1)]
-            ]
-            menor_piso = 2
-            maior_piso = 7
-        }
-    }
-    """
-
-    if n <= 1:
-        return a, comps, moves
-    else:
-        for numero in a:
-            if numero in frequencias:
-                frequencias[numero] = frequencias[numero] + 1
+    # Exemplo temporário (substitua pelo seu algoritmo):
+    for i in range(1, n):
+        key = a[i]
+        moves += 1
+        j = i - 1
+        while j >= 0:
+            comps += 1
+            if a[j] > key:
+                a[j + 1] = a[j]
+                moves += 1
+                j -= 1
             else:
-                frequencias[numero] = 1
-        for numero in frequencias:
-            parte_inteira = math.floor(numero)
-            id_bloco = parte_inteira // tamanho_bloco
+                break
+        a[j + 1] = key
+        moves += 1
+    # =========================================================================
 
-            if id_bloco in blocos:
-                bloco = blocos[id_bloco]
-                if parte_inteira < bloco["menor_piso"]:
-                    bloco["menor_piso"] = parte_inteira
-
-                if parte_inteira > bloco["maior_piso"]:
-                    bloco["maior_piso"] = parte_inteira
-            else:
-                blocos[id_bloco] = {
-                    "vetor": None,
-                    "menor_piso": parte_inteira,
-                    "maior_piso": parte_inteira
-                }
-
-        for bloco in blocos.values():
-            tamanho = bloco["maior_piso"] - bloco["menor_piso"] + 1
-            bloco["vetor"] = [None] * tamanho
-
-        for numero, quantidade in frequencias.items():
-            parte_inteira = math.floor(numero)
-            id_bloco = parte_inteira // tamanho_bloco
-            bloco = blocos[id_bloco]
-
-            indice = parte_inteira - bloco["menor_piso"]
-
-            if bloco["vetor"][indice] is None:
-                bloco["vetor"][indice] = []
-
-            bloco["vetor"][indice].append((numero, quantidade))
-
-        return a, comps, moves
+    return a, comps, moves
 
 
 # =============================================================================
