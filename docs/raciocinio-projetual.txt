@@ -1,6 +1,0 @@
-    Primeiro raciocinio foi ordenar os numeros atraves da criação de um vetor onde cada número iria aumentaria a quantidade
-no índice do vetor (numero = 20, vetor[numero] += 1), assim teriamos como ordenar percorrendo uma vez o vetor e ja montar a saida
-com base nas quantidades de cada indice. 
-    Ao analisar percebi que caso tivesse um numero muito grande (12000 por exemplo), seria criado um vetor com 12000 posições
-e muito provavelmente o vetor teria muito espaco nao utilizado. Para tentar otimizar esse espaco nao utilizado decidi fazer uma
-abordagem onde cada vetor tem um tamanho maximo (100 por exemplo).

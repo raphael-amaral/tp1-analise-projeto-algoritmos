@@ -5,6 +5,8 @@ Gera tabelas estatísticas em Markdown, CSV e gráficos comparativos PNG.
 
 import argparse
 from collections import defaultdict
+import csv
+import gc
 import os
 import random
 import time
@@ -13,8 +15,10 @@ from typing import Callable, Dict, List, Tuple
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 from authorial import dpes_sort
+from student_template import my_authorial_sort
 from classical import (
     bubble_sort,
     insertion_sort,
@@ -67,8 +71,8 @@ def run_benchmark(
             datasets = [generate_dataset(size, dist) for _ in range(trials)]
 
             for name, fn in algorithms.items():
-                # Para Bubble/Selection/Insertion, evita tamanhos excessivos que demoram muito
-                if size > 1500 and name in ("Bubble Sort", "Selection Sort", "Insertion Sort") and dist in ("random", "reverse"):
+                # Os métodos quadráticos ficam limitados a N=1.000.
+                if size > 1500 and name in ("Bubble Sort", "Selection Sort", "Insertion Sort"):
                     continue
 
                 times = []
@@ -77,9 +81,15 @@ def run_benchmark(
 
                 for data in datasets:
                     data_copy = list(data)
-                    start = time.perf_counter()
-                    res, c, m = fn(data_copy)
-                    elapsed_ms = (time.perf_counter() - start) * 1000.0
+                    gc_ativo = gc.isenabled()
+                    gc.disable()
+                    try:
+                        start = time.perf_counter()
+                        res, c, m = fn(data_copy)
+                        elapsed_ms = (time.perf_counter() - start) * 1000.0
+                    finally:
+                        if gc_ativo:
+                            gc.enable()
 
                     # Validação de sanidade
                     assert res == sorted(data), f"Erro de ordenação em {name}!"
@@ -115,6 +125,28 @@ def print_markdown_summary(results: dict, sizes: List[int]):
             print("| " + " | ".join(row) + " |")
 
 
+def save_csv(results: dict, output_path: str):
+    """Salva tempo, comparações e movimentações em formato tabular."""
+    with open(output_path, "w", newline="", encoding="utf-8") as arquivo:
+        writer = csv.writer(arquivo)
+        writer.writerow([
+            "distribuicao", "algoritmo", "n", "tempo_medio_ms",
+            "comparacoes_medias", "movimentacoes_medias"
+        ])
+        for distribuicao, algoritmos in results.items():
+            for algoritmo, tamanhos in algoritmos.items():
+                for n, metricas in sorted(tamanhos.items()):
+                    writer.writerow([
+                        distribuicao,
+                        algoritmo,
+                        n,
+                        f"{metricas['time_ms']:.6f}",
+                        f"{metricas['comps']:.2f}",
+                        f"{metricas['moves']:.2f}",
+                    ])
+    print(f"Dados salvos em: {output_path}")
+
+
 def plot_benchmark_results(results: dict, output_path: str = "benchmark_results.png"):
     """Gera gráficos de curvas de tempo e comparações usando matplotlib."""
     distributions = list(results.keys())
@@ -138,16 +170,29 @@ def plot_benchmark_results(results: dict, output_path: str = "benchmark_results.
         ax_time.set_title(f"Tempo de Execução (ms) — [{dist.title()}]")
         ax_time.set_xlabel("Tamanho da Entrada (N)")
         ax_time.set_ylabel("Tempo Médio (ms)")
+        ax_time.set_xscale("log")
+        ax_time.set_xticks(sorted({n for dados in results[dist].values() for n in dados}))
+        ax_time.xaxis.set_major_formatter(ScalarFormatter())
         ax_time.grid(True, linestyle="--", alpha=0.6)
         ax_time.legend()
 
         ax_comps.set_title(f"Número de Comparações — [{dist.title()}]")
         ax_comps.set_xlabel("Tamanho da Entrada (N)")
         ax_comps.set_ylabel("Comparações")
+        ax_comps.set_xscale("log")
+        ax_comps.set_xticks(sorted({n for dados in results[dist].values() for n in dados}))
+        ax_comps.xaxis.set_major_formatter(ScalarFormatter())
         ax_comps.grid(True, linestyle="--", alpha=0.6)
         ax_comps.legend()
 
-    plt.tight_layout()
+    fig.text(
+        0.5,
+        0.005,
+        "Bubble, Selection e Insertion foram limitados a N=1.000 devido ao custo quadrático.",
+        ha="center",
+        fontsize=9,
+    )
+    plt.tight_layout(rect=(0, 0.015, 1, 1))
     plt.savefig(output_path, dpi=150)
     print(f"\n🖼️ Gráfico salvo com sucesso em: {output_path}")
 
@@ -156,6 +201,7 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark de Algoritmos de Ordenação — APA")
     parser.add_argument("--trials", type=int, default=3, help="Número de repetições por teste")
     parser.add_argument("--plot", type=str, default="benchmark_results.png", help="Caminho para salvar o gráfico")
+    parser.add_argument("--csv", type=str, default="benchmark_results.csv", help="Caminho para salvar os dados")
     args = parser.parse_args()
 
     algorithms = {
@@ -165,14 +211,16 @@ def main():
         "Merge Sort": merge_sort,
         "Quick Sort": quick_sort,
         "Authorial (DPES)": dpes_sort,
+        "Autoral (Blocos)": my_authorial_sort,
     }
 
-    sizes = [10, 50, 100, 250, 500, 1000]
+    sizes = [10, 50, 100, 250, 500, 1000, 10000]
     distributions = ["random", "sorted", "reverse", "duplicates", "almost_sorted"]
 
     random.seed(42)
     results = run_benchmark(algorithms, sizes, distributions, trials=args.trials)
     print_markdown_summary(results, sizes)
+    save_csv(results, args.csv)
     plot_benchmark_results(results, args.plot)
 
 

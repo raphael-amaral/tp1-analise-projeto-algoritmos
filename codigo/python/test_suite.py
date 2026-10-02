@@ -8,6 +8,7 @@ import unittest
 from typing import Callable, List, Tuple
 
 from authorial import dpes_sort
+from student_template import my_authorial_sort
 from classical import (
     bubble_sort,
     insertion_sort,
@@ -121,6 +122,18 @@ class TestQuickSort(unittest.TestCase, BaseSortMixin):
 class TestAuthorialSort(unittest.TestCase, BaseSortMixin):
     sort_fn = staticmethod(dpes_sort)
     name = "Authorial Sort (DPES)"
+
+
+class TestStudentAuthorialSort(unittest.TestCase, BaseSortMixin):
+    sort_fn = staticmethod(my_authorial_sort)
+    name = "Algoritmo Autoral de Blocos"
+
+    def test_11_random_uniform_large(self):
+        """Escalabilidade exigida: vetor aleatório com N = 10.000"""
+        random.seed(2026)
+        data = [random.randint(-100_000, 100_000) for _ in range(10_000)]
+        res, _, _ = self.sort_fn(data)
+        self.assert_sorted(data, res)
 
 
 if __name__ == "__main__":

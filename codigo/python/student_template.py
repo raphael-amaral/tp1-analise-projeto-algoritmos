@@ -31,7 +31,7 @@ def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[An
     comps = 0
     moves = 0
 
-    # TODO: Escreva sua lógica autoral aqui.
+    # Estruturas principais do algoritmo autoral.
 
     frequencias: dict[int | float, int] = {}
     """
@@ -63,6 +63,33 @@ def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[An
     }
     """
 
+    # Usado somente para ordenar os IDs e os decimais de uma mesma posição.
+    def merge_sort(lista, chave):
+        nonlocal comps, moves
+        if len(lista) <= 1:
+            return list(lista)
+
+        meio = len(lista) // 2
+        esquerda = merge_sort(lista[:meio], chave)
+        direita = merge_sort(lista[meio:], chave)
+        resultado = []
+        i = j = 0
+
+        while i < len(esquerda) and j < len(direita):
+            comps += 1
+            if chave(esquerda[i]) <= chave(direita[j]):
+                resultado.append(esquerda[i])
+                i += 1
+            else:
+                resultado.append(direita[j])
+                j += 1
+            moves += 1
+
+        resultado.extend(esquerda[i:])
+        resultado.extend(direita[j:])
+        moves += len(esquerda) - i + len(direita) - j
+        return resultado
+
     if n <= 1:
         return a, comps, moves
     else:
@@ -77,9 +104,11 @@ def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[An
 
             if id_bloco in blocos:
                 bloco = blocos[id_bloco]
+                comps += 1
                 if parte_inteira < bloco["menor_piso"]:
                     bloco["menor_piso"] = parte_inteira
 
+                comps += 1
                 if parte_inteira > bloco["maior_piso"]:
                     bloco["maior_piso"] = parte_inteira
             else:
@@ -104,8 +133,22 @@ def my_authorial_sort(arr: List[Any], tamanho_bloco: int = 100) -> Tuple[List[An
                 bloco["vetor"][indice] = []
 
             bloco["vetor"][indice].append((numero, quantidade))
+            moves += 1
 
-        return a, comps, moves
+        ids_ordenados = merge_sort(list(blocos.keys()), lambda id_bloco: id_bloco)
+        saida = []
+
+        for id_bloco in ids_ordenados:
+            bloco = blocos[id_bloco]
+            for pares in bloco["vetor"]:
+                if pares is not None:
+                    pares = merge_sort(pares, lambda par: par[0])
+                    for numero, quantidade in pares:
+                        for _ in range(quantidade):
+                            saida.append(numero)
+                            moves += 1
+
+        return saida, comps, moves
 
 
 # =============================================================================
@@ -148,5 +191,5 @@ class TestStudentAuthorialSort(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    print("🧪 Executando testes unitários no seu algoritmo autoral...")
+    print("Executando testes unitários no seu algoritmo autoral...")
     unittest.main(verbosity=2)

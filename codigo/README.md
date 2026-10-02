@@ -1,74 +1,53 @@
-# Pacote de Códigos e Benchmarks — TP1 (APA)
+# Código e benchmarks — TP1
 
-Este diretório contém a implementação dos algoritmos de ordenação clássicos, o algoritmo autoral de referência (**DPES - Dual-Pivot Extremes Sieve Sort**), a suíte de testes de validação obrigatória e o framework de medição de desempenho e gráficos em **Python 3** e **C++17**.
+Este diretório contém a implementação do algoritmo autoral de blocos, os
+algoritmos fornecidos para comparação, a suíte obrigatória, testes
+complementares e os benchmarks usados no relatório.
 
----
+## Requisitos
 
-## 📂 Estrutura de Arquivos
+- Python 3.12 ou compatível;
+- Matplotlib 3.11.2 para gerar os gráficos.
 
-```text
-codigo/
-├── Makefile                          # Automação de compilação, testes e benchmarks
-├── README.md                         # Este guia de execução e desenvolvimento
-│
-├── python/                           # Implementação em Python 3
-│   ├── classical.py                  # Algoritmos clássicos (Bubble, Selection, Insertion, Merge, Quick)
-│   ├── authorial.py                  # Algoritmo autoral de referência (DPES)
-│   ├── metrics.py                    # Instrumentação (contagem de comparações, trocas e tempos)
-│   ├── test_suite.py                 # Suíte com todos os cenários de teste obrigatórios (unittest)
-│   ├── benchmark.py                  # Framework de benchmark com geração de gráficos matplotlib
-│   └── student_template.py           # Template inicial para o aluno desenvolver seu algoritmo
-│
-└── cpp/                              # Implementação em C++17 (Alta Performance)
-    ├── classical.hpp / .cpp          # Algoritmos clássicos instrumentados
-    ├── authorial.hpp / .cpp          # Algoritmo autoral DPES em C++
-    ├── test_runner.cpp               # Testes unitários com asserções em C++
-    └── benchmark.cpp                 # Benchmark estatístico de alta resolução em C++
+Instale a dependência dentro da pasta `codigo`:
+
+```bash
+python -m pip install -r requirements.txt
 ```
 
----
+## Testes
 
-## 🚀 Como Executar
+```bash
+python python/student_template.py
+python python/test_suite.py
+python python/extended_test_suite.py
+```
 
-### 1. Suíte de Testes Obrigatória
+O primeiro comando executa a validação direta do algoritmo. O segundo executa
+a suíte fornecida pelo professor, incluindo o caso autoral com 10.000
+elementos. O terceiro cobre fronteiras de blocos, decimais, valores distantes e
+diferentes tamanhos de bloco.
 
-* **Executar testes em Python:**
-  ```bash
-  make test_python
-  # ou: python3 python/test_suite.py
-  ```
+## Benchmarks
 
-* **Compilar e executar testes em C++:**
-  ```bash
-  make test_cpp
-  ```
+```bash
+python python/benchmark.py --trials 10 --plot benchmark_results.png --csv benchmark_results.csv
+python python/extended_benchmark.py --trials 10 --plot extended_benchmark_results.png --csv extended_benchmark_results.csv
+```
 
----
+Cada medição é repetida dez vezes. Bubble Sort, Selection Sort e Insertion Sort
+são limitados a 1.000 elementos devido ao custo quadrático; os demais chegam a
+10.000. Antes de registrar uma medição, a saída é comparada com `sorted`.
 
-### 2. Benchmarks e Comparação de Desempenho
+## Arquivos da implementação
 
-* **Executar benchmarks em Python (Gera tabelas Markdown e o gráfico `benchmark_results.png`):**
-  ```bash
-  make benchmark_python
-  # ou: python3 python/benchmark.py --trials 3 --plot benchmark_results.png
-  ```
+- `python/student_template.py`: algoritmo autoral e contadores;
+- `python/extended_test_suite.py`: testes complementares;
+- `python/extended_benchmark.py`: benchmark dos casos-limite;
+- `benchmark_results.csv` e `benchmark_results.png`: resultados principais;
+- `extended_benchmark_results.csv` e `extended_benchmark_results.png`:
+  resultados complementares.
 
-* **Executar benchmarks em C++:**
-  ```bash
-  make run_benchmark_cpp
-  ```
-
----
-
-## 🧑‍💻 Guia para o Aluno (Como usar o template)
-
-1. Abra o arquivo [`python/student_template.py`](file:///home/diogo/447658-ANALISE-E-PROJETOS-DE-ALGORITMOS/02-Semana-2-%2803-09-04-09%29/codigo/python/student_template.py).
-2. Escreva a lógica do seu algoritmo na função `my_authorial_sort(arr)`.
-3. Certifique-se de incrementar os contadores de comparações (`comps`) e movimentações (`moves`).
-4. Execute o arquivo diretamente para validar seu algoritmo contra a suíte de testes:
-   ```bash
-   python3 python/student_template.py
-   ```
-5. Para comparar seu algoritmo diretamente contra a literatura no benchmark gráfico:
-   * Importe seu método no `python/benchmark.py` e adicione ao dicionário `algorithms`.
-   * Execute `python3 python/benchmark.py` para gerar as curvas de tempo e comparações para o seu relatório ou apresentação!
+Os arquivos `classical.py`, `authorial.py` e `test_suite.py` preservam a base
+fornecida pelo professor, com a integração necessária para executar e comparar
+o algoritmo autoral.
